@@ -3,6 +3,7 @@ import pytest
 import json
 
 
+
 @pytest.fixture
 def get_req():
     headers = {'Accept': 'application/json'}
@@ -11,9 +12,9 @@ def get_req():
     return (get_r, d)
 
 
-def test_get_req(get_req):
-    contents = get_req
-    assert (contents[0].status_code) == 200
+def test_get_req_valid(get_req):
+    contents = get_req[0]
+    assert (contents.status_code) == 200
 
 
 def test_same_image(get_req):
@@ -69,7 +70,7 @@ def test_palind_title(get_req):
     d = get_req[1]
     results = ((d['results']))
     count_pals = 0
-    pal_titles=[]
+    pal_titles = []
     for movies in results:
         if movies['title'] is None:
             continue
@@ -86,3 +87,29 @@ def test_palind_title(get_req):
                     pal_titles.append(title)
                     count_pals += 1
     assert count_pals > 0
+
+
+def test_word_occurences(get_req):
+    d = get_req[1]
+    results = ((d['results']))
+    titles = {}
+    total_occurance = 0
+    for movies in results:
+        if movies['title'] is None:
+            continue
+        else:
+            for item in titles.keys():
+                if (movies['title']) in item:
+                    titles[item] = 1
+                    total_occurance += 1
+        titles[movies['title']] = 0
+    assert total_occurance > 1
+
+
+def test_get_req_count():
+    headers = {'Accept': 'application/json'}
+    get_r = requests.get("https://splunk.mocklab.io/movies?q=batman&count=7", headers=headers)
+    assert (get_r.status_code) == 200
+    d = json.loads(get_r.content)
+    results = ((d['results']))
+    assert len(results) == 7 #count parameter doesn't work
