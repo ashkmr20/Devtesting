@@ -1,6 +1,7 @@
 SPLUNK SDT HW
 ASHISH KUMAR SATHISH
 Environment requirements: Run the code with pytest
+
 List of bugs:
 1. The count parameter does not limit the query amount
 2. Different movies with the same image exist
