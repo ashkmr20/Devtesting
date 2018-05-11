@@ -13,19 +13,34 @@ def get_req():
 
 @pytest.mark.parametrize("urls", [
     "https://splunk.mocklab.io/movies?q=batman",
-    "https://splunk.mocklab.io/movies?q=batman&count=7",
-    "https://splunk.mocklab.io/movie"
+    "https://splunk.mocklab.io/movies?q=batman&count=7"
 ])
 def test_get_req_valid(urls):
     headers = {'Accept': 'application/json'}
     get_r = requests.get(urls, headers=headers)
     assert (get_r.status_code) == 200
 
-def test_post():
+
+def test_post_req():
+    headers = {'Content-Type': 'application/json'}
+    test_data = {"name": "superman", "description": "the best movie ever made"}
+    post_url = "https://splunk.mocklab.io/movies"
+    post_r = requests.post(post_url, data=test_data, headers=headers)
+    assert (post_r.status_code) == 200
+    get_url = post_url + "?q="
+    movie = test_data['name']
     headers = {'Accept': 'application/json'}
-    get_r = requests.get("https://splunk.mocklab.io/movies?q=batman", headers=headers)
-
-
+    get_url += movie
+    print(get_url)
+    get_r = requests.get(get_url, headers=headers)
+    assert (get_r.status_code) == 200
+    d = json.loads(get_r.content)
+    results = (d['results'])
+    movie_posted = False
+    for movies in results:
+        if movies == movie:
+            movie_posted = True
+    assert movie_posted
 
 
 def test_get_req_count():
