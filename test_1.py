@@ -3,7 +3,6 @@ import pytest
 import json
 
 
-
 @pytest.fixture
 def get_req():
     headers = {'Accept': 'application/json'}
@@ -12,9 +11,33 @@ def get_req():
     return (get_r, d)
 
 
-def test_get_req_valid(get_req):
-    contents = get_req[0]
-    assert (contents.status_code) == 200
+@pytest.mark.parametrize("urls", [
+    "https://splunk.mocklab.io/movies?q=batman",
+    "https://splunk.mocklab.io/movies?q=batman&count=7",
+    "https://splunk.mocklab.io/movie"
+])
+def test_get_req_valid(urls):
+    headers = {'Accept': 'application/json'}
+    get_r = requests.get(urls, headers=headers)
+    assert (get_r.status_code) == 200
+
+def test_post():
+    headers = {'Accept': 'application/json'}
+    get_r = requests.get("https://splunk.mocklab.io/movies?q=batman", headers=headers)
+
+
+
+
+def test_get_req_count():
+    headers = {'Accept': 'application/json'}
+    url = "https://splunk.mocklab.io/movies?q=batman&count="
+    count = 5
+    url = url + str(count)
+    get_r = requests.get(url, headers=headers)
+    assert (get_r.status_code) == 200
+    d = json.loads(get_r.content)
+    results = ((d['results']))
+    assert len(results) == count  # count parameter doesn't work
 
 
 def test_same_image(get_req):
@@ -44,10 +67,10 @@ def test_sorting_req(get_req):
     Genre_none_sort = True
     prev_id = -1
     for movies in results:
-        assert (movies['id']) > prev_id  # not in ascending order
+        assert (movies['id']) > prev_id  # not in ascending order REQUIREMENT 2
         prev_id = (movies['id'])
         if movies['genre_ids'] is None:
-            assert Genre_none_sort is True  # Null genre ids after non nulls
+            assert Genre_none_sort is True  # Null genre ids after non nulls, REQUIREMENT 1
             continue
         else:
             Genre_none_sort = False
@@ -104,12 +127,3 @@ def test_word_occurences(get_req):
                     total_occurance += 1
         titles[movies['title']] = 0
     assert total_occurance > 1
-
-
-def test_get_req_count():
-    headers = {'Accept': 'application/json'}
-    get_r = requests.get("https://splunk.mocklab.io/movies?q=batman&count=7", headers=headers)
-    assert (get_r.status_code) == 200
-    d = json.loads(get_r.content)
-    results = ((d['results']))
-    assert len(results) == 7 #count parameter doesn't work
